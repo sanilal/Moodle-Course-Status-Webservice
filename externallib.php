@@ -35,4 +35,38 @@ class local_course_status_external extends external_api {
     public static function update_course_status_returns() {
         return new external_value(PARAM_BOOL, 'Status update result');
     }
+
+    // New function to view course status.
+    public static function get_course_status_parameters() {
+        return new external_function_parameters(
+            array(
+                'courseid' => new external_value(PARAM_INT, 'Course ID')
+            )
+        );
+    }
+
+    public static function get_course_status($courseid) {
+        global $DB;
+
+        // Parameter validation.
+        $params = self::validate_parameters(self::get_course_status_parameters(), array('courseid' => $courseid));
+
+        // Capability check.
+        $context = context_course::instance($courseid);
+        self::validate_context($context);
+
+        // Retrieve the course status.
+        $record = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
+        $status = $record->status; // Assuming you have a 'status' field in your course table.
+
+        return array('status' => $status);
+    }
+
+    public static function get_course_status_returns() {
+        return new external_single_structure(
+            array(
+                'status' => new external_value(PARAM_TEXT, 'Course status')
+            )
+        );
+    }
 }
